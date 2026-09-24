@@ -73,7 +73,8 @@ async def websocket_endpoint(websocket: WebSocket):
             "anomalies": telemetry_service.active_anomalies[:5],
             "predictions": telemetry_service.latest_predictions,
             "rul": telemetry_service.latest_rul,
-            "events": telemetry_service.timeline_events[:15]
+            "events": telemetry_service.timeline_events[:15],
+            "data_source": telemetry_service.data_source
         })
         while True:
             # Keep connection alive & handle incoming client messages (e.g. ping)

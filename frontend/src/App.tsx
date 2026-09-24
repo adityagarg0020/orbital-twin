@@ -18,6 +18,7 @@ import { RecommendationsPage } from './pages/RecommendationsPage';
 import { TimelinePage } from './pages/TimelinePage';
 import { AIAssistantPage } from './pages/AIAssistantPage';
 import { ModelStatusPage } from './pages/ModelStatusPage';
+import { DataLabPage } from './pages/DataLabPage';
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
             <Route index element={<Navigate to="/mission-control/overview" replace />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="digital-twin" element={<DigitalTwinPage />} />
+            <Route path="data-lab" element={<DataLabPage />} />
             <Route path="telemetry" element={<TelemetryPage />} />
             <Route path="anomalies" element={<AnomalyDetectionPage />} />
             <Route path="predictions" element={<PredictionsPage />} />

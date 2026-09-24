@@ -113,19 +113,28 @@ export const WhatIfSimulationPage: React.FC = () => {
   const trajectoryOption = simResult ? {
     backgroundColor: 'transparent',
     grid: { left: 45, right: 25, top: 35, bottom: 25 },
-    tooltip: { trigger: 'axis', backgroundColor: '#070e1e', textStyle: { color: '#f1f5f9', fontSize: 11, fontFamily: 'monospace' } },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(7, 14, 28, 0.95)',
+      borderColor: '#1e3a66',
+      textStyle: { color: '#f1f5f9', fontSize: 11, fontFamily: 'JetBrains Mono' }
+    },
     legend: {
       data: ['Without Intervention (Health %)', 'With Mitigated Intervention (Health %)', 'Unmitigated Temp (°C)'],
-      textStyle: { color: '#94a3b8', fontSize: 11 },
+      textStyle: { color: '#94a3b8', fontSize: 11, fontFamily: 'Inter' },
       top: 0
     },
     xAxis: {
       type: 'category',
       data: simResult.trajectories.map((p: any) => `T+${p.hour}h`),
       axisLine: { lineStyle: { color: '#16243f' } },
-      axisLabel: { color: '#64748b', fontSize: 10 }
+      axisLabel: { color: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }
     },
-    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#0d182b' } }, axisLabel: { color: '#64748b', fontSize: 10 } },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: 'rgba(22, 36, 63, 0.5)' } },
+      axisLabel: { color: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }
+    },
     series: [
       {
         name: 'Without Intervention (Health %)',
@@ -162,33 +171,47 @@ export const WhatIfSimulationPage: React.FC = () => {
   } : null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#16243f] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#16243f]/80 pb-3.5">
         <div>
-          <h1 className="text-xl font-bold font-mono text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl font-display font-bold text-slate-100 flex items-center gap-2.5">
             <Sliders className="w-5 h-5 text-cyan-400" />
             MISSION SCENARIO SIMULATOR (WHAT-IF)
           </h1>
-          <p className="text-xs text-slate-400 font-mono">
-            Simulate counterfactual degradation scenarios and evaluate operator interventions before committing commands to spacecraft.
+          <p className="text-xs text-slate-400 telemetry-mono mt-0.5">
+            Evaluate counterfactual degradation scenarios and test mitigations before uplink.
           </p>
         </div>
 
         {/* Quick Presets */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-[#071328] p-1 rounded border border-[#16243f] text-xs font-mono">
-          <span className="text-slate-400 text-[10px] px-1">PRESETS:</span>
-          <button onClick={() => applyPreset('cooling')} className="px-2 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-rose-300">
+        <div className="flex flex-wrap items-center gap-1.5 bg-[#071328]/90 p-1.5 rounded-lg border border-[#16243f] text-xs telemetry-mono shadow-sm">
+          <span className="text-slate-400 font-hud font-bold uppercase text-[10px] px-1.5">
+            PRESETS:
+          </span>
+          <button
+            onClick={() => applyPreset('cooling')}
+            className="px-2.5 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-rose-300 font-hud tracking-wider uppercase text-[11px] font-bold cursor-pointer transition-all border border-rose-900/40"
+          >
             Cooling Loss
           </button>
-          <button onClick={() => applyPreset('solar')} className="px-2 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-amber-300">
+          <button
+            onClick={() => applyPreset('solar')}
+            className="px-2.5 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-amber-300 font-hud tracking-wider uppercase text-[11px] font-bold cursor-pointer transition-all border border-amber-900/40"
+          >
             Solar Drop
           </button>
-          <button onClick={() => applyPreset('battery')} className="px-2 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-cyan-300">
+          <button
+            onClick={() => applyPreset('battery')}
+            className="px-2.5 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-cyan-300 font-hud tracking-wider uppercase text-[11px] font-bold cursor-pointer transition-all border border-cyan-900/40"
+          >
             Power Surge
           </button>
-          <button onClick={() => applyPreset('nominal')} className="px-2 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-emerald-300">
-            Clear
+          <button
+            onClick={() => applyPreset('nominal')}
+            className="px-2.5 py-1 rounded bg-[#0d1c38] hover:bg-[#152a52] text-emerald-300 font-hud tracking-wider uppercase text-[11px] font-bold cursor-pointer transition-all border border-emerald-900/40"
+          >
+            Reset
           </button>
         </div>
       </div>
@@ -196,20 +219,20 @@ export const WhatIfSimulationPage: React.FC = () => {
       {/* Simulator Inputs & Configuration */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Controls Sliders (1 Col) */}
-        <div className="aerospace-panel p-5 rounded space-y-4">
-          <h2 className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider border-b border-[#16243f] pb-2 flex items-center justify-between">
+        <div className="hud-panel hud-corner p-5 rounded-xl space-y-4 border border-[#16243f]">
+          <h2 className="text-xs font-hud font-bold text-slate-200 uppercase tracking-widest border-b border-[#16243f] pb-2.5 flex items-center justify-between">
             <span>SCENARIO PARAMETERS</span>
-            <span className="text-[10px] text-cyan-400 font-normal">STEP DURATION: {durationHours}H</span>
+            <span className="text-[10px] text-cyan-400 font-normal telemetry-mono">HORIZON: {durationHours}H</span>
           </h2>
 
           {/* Cooling Loop Slider */}
-          <div className="space-y-1 font-mono text-xs">
+          <div className="space-y-1.5 telemetry-mono text-xs">
             <div className="flex justify-between text-slate-300">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 font-hud tracking-wider font-bold">
                 <Flame className="w-3.5 h-3.5 text-rose-400" />
                 Cooling Loop Degradation:
               </span>
-              <span className="font-bold text-rose-400">{coolingFailure}%</span>
+              <span className="font-bold text-rose-400 font-display">{coolingFailure}%</span>
             </div>
             <input
               type="range"
@@ -222,13 +245,13 @@ export const WhatIfSimulationPage: React.FC = () => {
           </div>
 
           {/* Solar Power Reduction */}
-          <div className="space-y-1 font-mono text-xs">
+          <div className="space-y-1.5 telemetry-mono text-xs">
             <div className="flex justify-between text-slate-300">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 font-hud tracking-wider font-bold">
                 <Zap className="w-3.5 h-3.5 text-amber-400" />
                 Solar Power Reduction:
               </span>
-              <span className="font-bold text-amber-400">{solarReduction}%</span>
+              <span className="font-bold text-amber-400 font-display">{solarReduction}%</span>
             </div>
             <input
               type="range"
@@ -241,13 +264,13 @@ export const WhatIfSimulationPage: React.FC = () => {
           </div>
 
           {/* Power Load Increase */}
-          <div className="space-y-1 font-mono text-xs">
+          <div className="space-y-1.5 telemetry-mono text-xs">
             <div className="flex justify-between text-slate-300">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 font-hud tracking-wider font-bold">
                 <Battery className="w-3.5 h-3.5 text-cyan-400" />
                 Bus Power Load Surge:
               </span>
-              <span className="font-bold text-cyan-300">+{powerLoadIncrease}%</span>
+              <span className="font-bold text-cyan-300 font-display">+{powerLoadIncrease}%</span>
             </div>
             <input
               type="range"
@@ -260,10 +283,10 @@ export const WhatIfSimulationPage: React.FC = () => {
           </div>
 
           {/* Duration Slider */}
-          <div className="space-y-1 font-mono text-xs pt-2 border-t border-[#16243f]">
+          <div className="space-y-1.5 telemetry-mono text-xs pt-2.5 border-t border-[#16243f]">
             <div className="flex justify-between text-slate-300">
-              <span>Simulation Projection Horizon:</span>
-              <span className="font-bold text-slate-100">{durationHours} Hours</span>
+              <span className="font-hud tracking-wider font-bold">Projection Horizon:</span>
+              <span className="font-bold text-slate-100 font-display">{durationHours} Hours</span>
             </div>
             <input
               type="range"
@@ -280,7 +303,7 @@ export const WhatIfSimulationPage: React.FC = () => {
           <button
             onClick={handleRunSimulation}
             disabled={running}
-            className="w-full py-2.5 px-4 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-950 disabled:opacity-50"
+            className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-hud text-sm font-bold tracking-widest uppercase flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] disabled:opacity-50 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-current" />
             {running ? 'CALCULATING ORBITAL TRAJECTORY...' : 'RUN WHAT-IF SIMULATION'}
@@ -290,43 +313,53 @@ export const WhatIfSimulationPage: React.FC = () => {
         {/* Results Area (2 Cols) */}
         <div className="lg:col-span-2 space-y-4">
           {simResult ? (
-            <div className="aerospace-panel p-5 rounded space-y-4">
+            <div className="hud-panel hud-corner p-5 rounded-xl space-y-4 border border-[#16243f]">
               <div className="flex items-center justify-between border-b border-[#16243f] pb-3">
                 <div>
-                  <div className="text-[10px] font-mono text-slate-400">SIMULATION FORECAST OUTCOME</div>
-                  <h3 className="text-sm font-bold font-mono text-slate-100">
-                    CURRENT STATE vs SIMULATED PROJECTION ({durationHours}h)
+                  <div className="text-[10px] font-hud uppercase tracking-widest text-slate-400 font-bold">
+                    SIMULATION FORECAST OUTCOME
+                  </div>
+                  <h3 className="text-sm font-display font-bold text-slate-100">
+                    BASELINE vs COUNTERFACTUAL PROJECTION ({durationHours}h)
                   </h3>
                 </div>
-                <div className={`px-2.5 py-1 rounded text-xs font-mono font-bold border ${
+                <div className={`px-3 py-1 rounded-md text-xs telemetry-mono font-bold border ${
                   simResult.recovery_possible
-                    ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                    : 'bg-rose-950 text-rose-300 border-rose-800'
+                    ? 'bg-emerald-950 text-emerald-300 border-emerald-800 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                    : 'bg-rose-950 text-rose-300 border-rose-800 shadow-[0_0_10px_rgba(244,63,94,0.3)]'
                 }`}>
                   {simResult.recovery_possible ? '✓ MITIGATION FEASIBLE' : '⚠ CRITICAL FAILURE PROJECTED'}
                 </div>
               </div>
 
               {/* Side-by-side metric comparison */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono text-xs">
-                <div className="p-3 rounded bg-[#091222] border border-[#16243f]">
-                  <div className="text-slate-400 text-[10px]">CURRENT HEALTH</div>
-                  <div className="text-lg font-bold text-slate-100 mt-1">{simResult.current_state.health}%</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 telemetry-mono text-xs">
+                <div className="p-3.5 rounded-lg bg-[#091222]/90 border border-[#16243f]">
+                  <div className="text-slate-400 text-[10px] font-hud uppercase tracking-wider font-bold">
+                    CURRENT HEALTH
+                  </div>
+                  <div className="text-xl font-display font-black text-slate-100 mt-1">{simResult.current_state.health}%</div>
                 </div>
-                <div className="p-3 rounded bg-[#091222] border border-rose-900/40">
-                  <div className="text-slate-400 text-[10px]">WITHOUT ACTION</div>
-                  <div className="text-lg font-bold text-rose-400 mt-1">{simResult.simulated_state.unmitigated_health}%</div>
-                  <div className="text-[9px] text-slate-500">Bus: {simResult.simulated_state.unmitigated_temp}°C</div>
+                <div className="p-3.5 rounded-lg bg-[#091222]/90 border border-rose-900/60">
+                  <div className="text-slate-400 text-[10px] font-hud uppercase tracking-wider font-bold">
+                    WITHOUT ACTION
+                  </div>
+                  <div className="text-xl font-display font-black text-rose-400 mt-1">{simResult.simulated_state.unmitigated_health}%</div>
+                  <div className="text-[10px] text-slate-400">Bus: {simResult.simulated_state.unmitigated_temp}°C</div>
                 </div>
-                <div className="p-3 rounded bg-[#091222] border border-emerald-900/40">
-                  <div className="text-slate-400 text-[10px]">WITH MITIGATION</div>
-                  <div className="text-lg font-bold text-emerald-400 mt-1">{simResult.simulated_state.mitigated_health}%</div>
-                  <div className="text-[9px] text-slate-500">Bus: {simResult.simulated_state.mitigated_temp}°C</div>
+                <div className="p-3.5 rounded-lg bg-[#091222]/90 border border-emerald-900/60">
+                  <div className="text-slate-400 text-[10px] font-hud uppercase tracking-wider font-bold">
+                    WITH MITIGATION
+                  </div>
+                  <div className="text-xl font-display font-black text-emerald-400 mt-1">{simResult.simulated_state.mitigated_health}%</div>
+                  <div className="text-[10px] text-slate-400">Bus: {simResult.simulated_state.mitigated_temp}°C</div>
                 </div>
-                <div className="p-3 rounded bg-[#091222] border border-cyan-900/40">
-                  <div className="text-slate-400 text-[10px]">BATTERY RECOVERED</div>
-                  <div className="text-lg font-bold text-cyan-300 mt-1">{simResult.simulated_state.mitigated_battery}%</div>
-                  <div className="text-[9px] text-slate-500">SoC maintained</div>
+                <div className="p-3.5 rounded-lg bg-[#091222]/90 border border-cyan-900/60">
+                  <div className="text-slate-400 text-[10px] font-hud uppercase tracking-wider font-bold">
+                    BATTERY RECOVERED
+                  </div>
+                  <div className="text-xl font-display font-black text-cyan-300 mt-1">{simResult.simulated_state.mitigated_battery}%</div>
+                  <div className="text-[10px] text-slate-400">SoC maintained</div>
                 </div>
               </div>
 
@@ -336,21 +369,25 @@ export const WhatIfSimulationPage: React.FC = () => {
               </div>
 
               {/* Summary and Action Recommendation */}
-              <div className="p-3 rounded bg-[#060e1d] border border-[#14223d] space-y-1.5 font-mono text-xs">
-                <div className="text-slate-400 text-[10px] uppercase font-bold">Physics Model Narrative:</div>
+              <div className="p-4 rounded-xl bg-[#060e1d]/90 border border-[#14223d] space-y-2 telemetry-mono text-xs">
+                <div className="text-slate-400 text-[10px] font-hud uppercase tracking-widest font-bold">
+                  PHYSICS MODEL NARRATIVE:
+                </div>
                 <p className="text-slate-300 leading-relaxed font-sans text-xs">{simResult.outcome_summary}</p>
-                <div className="pt-2 border-t border-[#121e36] text-[11px] text-cyan-300 flex items-center gap-1.5">
+                <div className="pt-2 border-t border-[#121e36] text-[11px] text-cyan-300 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span><strong>Operator Directive:</strong> {simResult.recommended_mitigation}</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="aerospace-panel p-12 rounded text-center space-y-3 font-mono text-slate-400">
-              <Sliders className="w-12 h-12 text-slate-600 mx-auto" />
-              <div className="text-sm font-bold text-slate-300">Simulator Standing By</div>
-              <p className="text-xs text-slate-500 max-w-md mx-auto font-sans">
-                Adjust degradation sliders or select a preset, then click "RUN WHAT-IF SIMULATION" to calculate counterfactual future trajectories.
+            <div className="hud-panel hud-corner p-14 rounded-xl text-center space-y-3 font-mono text-slate-400 border border-[#16243f]">
+              <Sliders className="w-14 h-14 text-cyan-500/40 mx-auto animate-pulse" />
+              <div className="text-base font-hud font-bold text-slate-200 tracking-wider">
+                SIMULATOR STANDING BY
+              </div>
+              <p className="text-xs text-slate-400 max-w-md mx-auto font-sans leading-relaxed">
+                Adjust degradation sliders or select a preset scenario, then click "RUN WHAT-IF SIMULATION" to calculate counterfactual future trajectories.
               </p>
             </div>
           )}

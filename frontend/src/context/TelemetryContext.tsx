@@ -19,6 +19,8 @@ interface TelemetryContextType {
   setSpeed: (speed: number) => Promise<void>;
   speedMultiplier: number;
   isSimRunning: boolean;
+  dataSource: string;
+  setDataSource: (source: string) => void;
 }
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined);
@@ -34,6 +36,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [selectedSubsystem, setSelectedSubsystem] = useState<string | null>(null);
   const [speedMultiplier, setSpeedState] = useState(1.0);
   const [isSimRunning, setIsSimRunning] = useState(true);
+  const [dataSource, setDataSource] = useState<string>('SIMULATION');
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
@@ -83,6 +86,8 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             if (msg.predictions) setPredictions(msg.predictions);
             if (msg.rul) setRul(msg.rul);
             if (msg.latest_event) setLatestEvent(msg.latest_event);
+            if (msg.data_source) setDataSource(msg.data_source);
+            else if (data.data_source) setDataSource(data.data_source);
           }
         } catch (e) {
           console.error('Error parsing WS message', e);
@@ -171,7 +176,9 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         resetSimulation,
         setSpeed,
         speedMultiplier,
-        isSimRunning
+        isSimRunning,
+        dataSource,
+        setDataSource
       }}
     >
       {children}

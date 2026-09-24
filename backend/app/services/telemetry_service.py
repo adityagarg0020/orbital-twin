@@ -24,6 +24,7 @@ class TelemetryService:
         self.is_running = True
         self.speed_multiplier = 1.0
         self.mission_elapsed_seconds = 3648240  # 42 days, 5 hours, etc.
+        self.data_source = "SIMULATION"  # SIMULATION, UPLOADED DATA, NASA DATA
         
         # Buffers
         self.history: deque = deque(maxlen=300)
@@ -64,6 +65,7 @@ class TelemetryService:
     def reset(self):
         self.physics = PhysicsEngine()
         self.scenario_mgr = ScenarioManager()
+        self.data_source = "SIMULATION"
         self.history.clear()
         self.active_anomalies.clear()
         self.latest_predictions.clear()
@@ -162,6 +164,7 @@ class TelemetryService:
         raw_telemetry["degradation_stage"] = stage
         raw_telemetry["degradation_progress"] = round(progress, 2)
         raw_telemetry["mission_elapsed_seconds"] = self.mission_elapsed_seconds
+        raw_telemetry["data_source"] = self.data_source
         
         # Save to buffer
         self.history.append(raw_telemetry)
@@ -173,9 +176,129 @@ class TelemetryService:
             "anomalies": self.active_anomalies[:5],
             "predictions": self.latest_predictions,
             "rul": self.latest_rul,
-            "latest_event": self.timeline_events[0] if self.timeline_events else None
+            "latest_event": self.timeline_events[0] if self.timeline_events else None,
+            "data_source": self.data_source
         }
         await connection_manager.broadcast(packet)
+
+    async def ingest_manual_telemetry(
+        self,
+        manual_state: Dict[str, Any],
+        anomalies: Optional[List[Dict[str, Any]]] = None,
+        predictions: Optional[List[Dict[str, Any]]] = None,
+        rul: Optional[Dict[str, Any]] = None,
+        source_name: str = "UPLOADED DATA"
+    ) -> Dict[str, Any]:
+        """Loads validated external telemetry directly into Digital Twin, runs ML models if needed, and broadcasts."""
+        self.data_source = source_name
+        
+        # Ensure complete feature set merged with current baseline
+        current_baseline = self.get_latest_state()
+        merged_telemetry = {**current_baseline, **manual_state}
+        merged_telemetry["data_source"] = source_name
+        merged_telemetry["timestamp"] = manual_state.get("timestamp") or datetime.utcnow().isoformat()
+        merged_telemetry["operating_mode"] = "MANUAL_INPUT"
+        
+        # Run Isolation Forest if anomaly info not explicitly provided
+        if anomalies is not None:
+            self.active_anomalies = anomalies
+            merged_telemetry["anomaly_score"] = anomalies[0]["score"] if anomalies else 0.12
+            merged_telemetry["anomaly_detected"] = len(anomalies) > 0
+            merged_telemetry["anomaly_severity"] = anomalies[0]["severity"] if anomalies else "NOMINAL"
+        else:
+            anomaly_res = anomaly_detector.predict(merged_telemetry)
+            merged_telemetry["anomaly_score"] = anomaly_res["anomaly_score"]
+            merged_telemetry["anomaly_detected"] = anomaly_res["anomaly_detected"]
+            merged_telemetry["anomaly_severity"] = anomaly_res["severity"]
+            if anomaly_res["anomaly_detected"]:
+                self.active_anomalies = [{
+                    "id": len(self.active_anomalies) + 1,
+                    "timestamp": merged_telemetry["timestamp"],
+                    "subsystem": anomaly_res["subsystem"],
+                    "channel": f"T-1" if anomaly_res["subsystem"] == "Thermal" else ("P-1" if anomaly_res["subsystem"] == "Power" else "S-1"),
+                    "score": anomaly_res["anomaly_score"],
+                    "severity": anomaly_res["severity"],
+                    "affected_parameters": [f["parameter"] for f in anomaly_res["deviant_features"]],
+                    "description": f"Significant variance detected in {anomaly_res['subsystem']} telemetry (Isolation Forest score {int(anomaly_res['anomaly_score']*100)}%).",
+                    "is_nasa_benchmark": False,
+                    "status": "ACTIVE"
+                }]
+            else:
+                self.active_anomalies = []
+
+        # Run Failure Prediction if not explicitly provided
+        if predictions is not None:
+            self.latest_predictions = predictions
+        else:
+            self.latest_predictions = failure_predictor.predict_all(merged_telemetry, list(self.history))
+            
+        highest_p = 0.0
+        highest_sub = "NONE"
+        for p in self.latest_predictions:
+            if p["failure_probability"] > highest_p:
+                highest_p = p["failure_probability"]
+                highest_sub = p["subsystem"]
+        merged_telemetry["highest_failure_risk"] = highest_sub
+        merged_telemetry["max_failure_prob"] = highest_p
+
+        # Run RUL estimation if not explicitly provided
+        if rul is not None:
+            self.latest_rul = rul
+        else:
+            self.latest_rul = rul_estimator.estimate_components(merged_telemetry)
+        if "Battery" in self.latest_rul.get("components", {}):
+            merged_telemetry["rul_hours"] = self.latest_rul["components"]["Battery"]["estimated_rul_hours"]
+
+        # Append to history buffer
+        self.history.append(merged_telemetry)
+
+        # Log timeline event
+        self._record_event(
+            "INFO",
+            "MANUAL TELEMETRY INGESTED",
+            f"External telemetry dataset ({source_name}) successfully loaded into digital twin and analyzed by ML pipeline.",
+            "DATA LAB"
+        )
+
+        # Broadcast update immediately
+        packet = {
+            "type": "TELEMETRY_UPDATE",
+            "telemetry": merged_telemetry,
+            "anomalies": self.active_anomalies[:5],
+            "predictions": self.latest_predictions,
+            "rul": self.latest_rul,
+            "latest_event": self.timeline_events[0] if self.timeline_events else None,
+            "data_source": self.data_source
+        }
+        await connection_manager.broadcast(packet)
+        return merged_telemetry
+
+    async def reset_to_demo_data(self):
+        """Restores the baseline simulation environment."""
+        self.reset()
+        self.data_source = "SIMULATION"
+        self._record_event("SUCCESS", "RESTORED DEMO DATA", "Spacecraft telemetry restored to nominal simulation environment.", "DATA LAB")
+        initial_telemetry = self.physics.step(0.0)
+        initial_telemetry["data_source"] = self.data_source
+        initial_telemetry["timestamp"] = datetime.utcnow().isoformat()
+        initial_telemetry["anomaly_score"] = 0.05
+        initial_telemetry["anomaly_detected"] = False
+        initial_telemetry["anomaly_severity"] = "NOMINAL"
+        self.history.append(initial_telemetry)
+        packet = {
+            "type": "TELEMETRY_UPDATE",
+            "telemetry": initial_telemetry,
+            "anomalies": [],
+            "predictions": self.latest_predictions,
+            "rul": self.latest_rul,
+            "latest_event": self.timeline_events[0] if self.timeline_events else None,
+            "data_source": self.data_source
+        }
+        await connection_manager.broadcast(packet)
+
+    async def clear_uploaded_data(self):
+        """Clears uploaded telemetry data and reverts to simulation baseline."""
+        await self.reset_to_demo_data()
 
     def get_latest_state(self) -> Dict[str, Any]:
         """Returns the full unified digital twin state."""
@@ -186,6 +309,7 @@ class TelemetryService:
             res["predictions"] = self.latest_predictions
             res["rul"] = self.latest_rul
             res["recent_events"] = self.timeline_events[:10]
+            res["data_source"] = self.data_source
             return res
             
         latest = copy.deepcopy(self.history[-1])
@@ -193,6 +317,7 @@ class TelemetryService:
         latest["predictions"] = self.latest_predictions
         latest["rul"] = self.latest_rul
         latest["recent_events"] = self.timeline_events[:10]
+        latest["data_source"] = self.data_source
         return latest
 
 telemetry_service = TelemetryService()

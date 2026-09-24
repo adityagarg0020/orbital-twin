@@ -152,3 +152,66 @@ class ChatResponse(BaseModel):
 
 class DemoTriggerRequest(BaseModel):
     scenario: str  # NORMAL, THERMAL_DEGRADATION, BATTERY_FAILURE, COMMUNICATION_FAILURE, PROPULSION_ANOMALY, SOLAR_POWER_DROP
+
+# Manual Telemetry Data Lab Schemas
+class ManualDataValidationRequest(BaseModel):
+    csv_content: Optional[str] = None
+    json_content: Optional[str] = None
+    column_mapping: Optional[Dict[str, str]] = None
+
+class ValidationIssue(BaseModel):
+    field: str
+    row_index: int
+    issue_type: str  # "TYPE_ERROR", "OUT_OF_RANGE", "MISSING_VALUE", "DUPLICATE_TIMESTAMP"
+    message: str
+    value: Any
+
+class ManualDataValidationResponse(BaseModel):
+    is_valid: bool
+    row_count: int
+    column_count: int
+    detected_columns: List[str]
+    mapped_columns: Dict[str, str]
+    missing_values_count: int
+    missing_percentage: float
+    invalid_values_count: int
+    data_types: Dict[str, str]
+    preview_rows: List[Dict[str, Any]]
+    errors: List[str]
+    warnings: List[str]
+    time_range: str
+    status: str  # "READY FOR ANALYSIS", "NEEDS COLUMN MAPPING", "VALIDATION FAILED"
+
+class ManualDataAnalysisRequest(BaseModel):
+    raw_point: Optional[Dict[str, Any]] = None
+    rows: Optional[List[Dict[str, Any]]] = None
+    column_mapping: Optional[Dict[str, str]] = None
+
+class ManualDataAnalysisResponse(BaseModel):
+    telemetry: Dict[str, Any]
+    anomaly_detection: Dict[str, Any]
+    failure_predictions: List[Dict[str, Any]]
+    subsystem_health: Dict[str, float]
+    root_cause: Dict[str, Any]
+    recommendations: List[Dict[str, Any]]
+    rul: Dict[str, Any]
+    summary: str
+
+class ManualLoadIntoTwinRequest(BaseModel):
+    telemetry: Dict[str, Any]
+    anomalies: Optional[List[Dict[str, Any]]] = None
+    predictions: Optional[List[Dict[str, Any]]] = None
+    rul: Optional[Dict[str, Any]] = None
+    source_name: Optional[str] = "UPLOADED DATA"
+
+class HealthComponent(BaseModel):
+    status: str  # ONLINE, OFFLINE, STANDBY
+    details: str
+    metrics: Optional[Dict[str, Any]] = None
+
+class SystemHealthResponse(BaseModel):
+    status: str  # ONLINE, DEGRADED, OFFLINE
+    service: str
+    timestamp: str
+    data_source: str  # SIMULATION, UPLOADED DATA, NASA DATA
+    components: Dict[str, HealthComponent]

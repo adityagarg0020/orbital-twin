@@ -30,7 +30,7 @@ export const SubsystemsPage: React.FC = () => {
       trend: (telemetry?.thermal_health ?? 95) < 85 ? 'DEGRADING' : 'STABLE',
       status: (telemetry?.thermal_health ?? 95) < 70 ? 'CRITICAL' : ((telemetry?.thermal_health ?? 95) < 85 ? 'WARNING' : 'NOMINAL'),
       telemetryItems: [
-        { label: 'Bus Temperature', value: `${telemetry?.temperature ?? 24.0}°C`, nominal: '24.0°C' },
+        { label: 'Bus Core Temperature', value: `${telemetry?.temperature ?? 24.0}°C`, nominal: '24.0°C' },
         { label: 'Radiator Surface Temp', value: `${telemetry?.radiator_temp ?? -18.2}°C`, nominal: '-18.0°C' },
         { label: 'Cooling Loop Efficiency', value: `${telemetry?.cooling_efficiency ?? 100}%`, nominal: '100%' },
         { label: 'Thermal Capacity', value: '25,000 J/K', nominal: '25,000 J/K' }
@@ -127,22 +127,22 @@ export const SubsystemsPage: React.FC = () => {
   const failProb = matchingPred ? Math.round(matchingPred.failure_probability * 100) : 5;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#16243f] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#16243f]/80 pb-3.5">
         <div>
-          <h1 className="text-xl font-bold font-mono text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl font-display font-bold text-slate-100 flex items-center gap-2.5">
             <Layers className="w-5 h-5 text-cyan-400" />
             MULTI-SUBSYSTEM HEALTH MATRIX
           </h1>
-          <p className="text-xs text-slate-400 font-mono">
-            Subsystem diagnostics, live sensor telemetry, anomaly correlation, and degradation predictions.
+          <p className="text-xs text-slate-400 telemetry-mono mt-0.5">
+            Cross-subsystem diagnostic telemetry, live sensor channels, anomaly correlation, and degradation predictions.
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-[#16243f] pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-[#16243f] pb-3">
         {subsystems.map((sub) => {
           const Icon = sub.icon;
           const isActive = activeTab === sub.id;
@@ -150,16 +150,16 @@ export const SubsystemsPage: React.FC = () => {
             <button
               key={sub.id}
               onClick={() => setActiveTab(sub.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded text-xs font-mono transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-hud tracking-wider transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/60 font-bold shadow-md shadow-cyan-950/40'
-                  : 'bg-[#0a1427] text-slate-400 hover:text-slate-200 border border-transparent hover:border-[#16243f]'
+                  ? 'bg-gradient-to-r from-cyan-950 to-cyan-900 text-cyan-300 border border-cyan-500/60 font-bold shadow-[0_0_12px_rgba(0,240,255,0.25)]'
+                  : 'bg-[#0a1427]/80 text-slate-400 hover:text-slate-100 border border-transparent hover:border-[#16243f]'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
               <span>{sub.name.split('(')[0]}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                sub.health < 70 ? 'bg-rose-950 text-rose-300' : 'bg-[#101d36] text-slate-300'
+              <span className={`text-[10px] telemetry-mono px-1.5 py-0.2 rounded font-bold ${
+                sub.health < 70 ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-[#101d36] text-slate-300'
               }`}>
                 {sub.health}%
               </span>
@@ -172,18 +172,18 @@ export const SubsystemsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left 2 Cols: Telemetry & Description */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="aerospace-panel p-5 rounded space-y-4">
-            <div className="flex items-center justify-between border-b border-[#16243f] pb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded bg-[#0d1c38] text-cyan-400">
+          <div className="hud-panel hud-corner p-6 rounded-xl space-y-4 border border-[#16243f]">
+            <div className="flex items-center justify-between border-b border-[#16243f] pb-3.5">
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-lg bg-[#0d1c38] text-cyan-400 shadow-sm">
                   {React.createElement(current.icon, { className: 'w-6 h-6' })}
                 </div>
                 <div>
-                  <h2 className="text-base font-bold font-mono text-slate-100">{current.name}</h2>
-                  <div className="text-xs font-mono text-slate-400 flex items-center gap-2 mt-0.5">
+                  <h2 className="text-base font-hud font-bold text-slate-100 tracking-wide">{current.name}</h2>
+                  <div className="text-xs telemetry-mono text-slate-400 flex items-center gap-2 mt-0.5">
                     <span>TREND:</span>
                     <span className={`font-semibold flex items-center gap-1 ${
-                      current.trend === 'DEGRADING' ? 'text-rose-400' : 'text-emerald-400'
+                      current.trend === 'DEGRADING' ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'
                     }`}>
                       {current.trend === 'DEGRADING' ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
                       {current.trend}
@@ -192,9 +192,9 @@ export const SubsystemsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-right font-mono">
-                <div className="text-xs text-slate-400">HEALTH</div>
-                <div className={`text-3xl font-bold ${current.health < 70 ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <div className="text-right telemetry-mono">
+                <div className="text-[10px] font-hud uppercase tracking-widest text-slate-400 font-bold">HEALTH</div>
+                <div className={`text-3xl font-display font-black ${current.health < 70 ? 'text-rose-400' : 'text-emerald-400'}`}>
                   {current.health}%
                 </div>
               </div>
@@ -203,11 +203,11 @@ export const SubsystemsPage: React.FC = () => {
             <p className="text-xs text-slate-300 leading-relaxed font-sans">{current.description}</p>
 
             {/* Telemetry Metric Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
               {current.telemetryItems.map((item, i) => (
-                <div key={i} className="p-3 rounded bg-[#091222] border border-[#16243f] font-mono text-xs">
-                  <div className="text-slate-400 text-[11px]">{item.label}</div>
-                  <div className="text-base font-bold text-slate-100 mt-1">{item.value}</div>
+                <div key={i} className="p-3.5 rounded-lg bg-[#091222]/90 border border-[#16243f] telemetry-mono text-xs">
+                  <div className="text-slate-400 text-[11px] font-hud uppercase tracking-wider">{item.label}</div>
+                  <div className="text-lg font-display font-bold text-slate-100 mt-1">{item.value}</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">Expected Baseline: {item.nominal}</div>
                 </div>
               ))}
@@ -217,42 +217,42 @@ export const SubsystemsPage: React.FC = () => {
 
         {/* Right Col: AI & ML Risk Projection Card */}
         <div className="space-y-4">
-          <div className="aerospace-panel p-5 rounded space-y-4">
-            <h3 className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2 border-b border-[#16243f] pb-2">
+          <div className="hud-panel hud-corner p-6 rounded-xl space-y-4 border border-[#16243f]">
+            <h3 className="text-xs font-hud font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2 border-b border-[#16243f] pb-2.5">
               <AlertTriangle className="w-4 h-4 text-purple-400" />
               ML RISK & DEGRADATION ESTIMATE
             </h3>
 
-            <div className="space-y-2 font-mono">
+            <div className="space-y-2 telemetry-mono">
               <div className="flex justify-between items-baseline text-xs">
-                <span className="text-slate-400">Failure Risk:</span>
-                <span className={`text-xl font-bold ${failProb > 50 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <span className="text-slate-400 font-hud tracking-wider uppercase text-[11px]">Failure Risk:</span>
+                <span className={`text-2xl font-display font-black ${failProb > 50 ? 'text-rose-400' : 'text-emerald-400'}`}>
                   {failProb}%
                 </span>
               </div>
-              <div className="w-full bg-[#0a1222] h-2 rounded-full overflow-hidden border border-[#16243f]">
+              <div className="w-full bg-[#0a1222] h-2 rounded-full overflow-hidden border border-[#16243f] p-0.5">
                 <div
-                  className={`h-full ${failProb > 50 ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                  className={`h-full rounded-full transition-all duration-500 ${failProb > 50 ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'}`}
                   style={{ width: `${failProb}%` }}
                 />
               </div>
             </div>
 
-            <div className="p-3 rounded bg-[#07101f] border border-[#14233e] space-y-1.5 text-xs font-mono">
-              <div className="text-slate-400 text-[10px] uppercase font-bold">Recommended Mitigation:</div>
-              <p className="text-slate-200 text-[11px] leading-relaxed">{current.recommendedAction}</p>
+            <div className="p-3.5 rounded-lg bg-[#07101f]/90 border border-[#14233e] space-y-1.5 text-xs telemetry-mono">
+              <div className="text-slate-400 text-[10px] font-hud uppercase tracking-widest font-bold">Recommended Mitigation:</div>
+              <p className="text-slate-200 text-xs leading-relaxed font-sans">{current.recommendedAction}</p>
             </div>
 
             <div className="pt-2 flex flex-col gap-2">
               <Link
                 to="/mission-control/simulation"
-                className="py-2 px-3 rounded bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 text-xs font-mono text-center transition-colors"
+                className="py-2.5 px-3 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 hover:text-white text-xs font-hud font-bold tracking-wider text-center transition-all shadow-sm"
               >
                 SIMULATE THIS SUBSYSTEM →
               </Link>
               <Link
                 to="/mission-control/recommendations"
-                className="py-2 px-3 rounded bg-[#0e1a32] hover:bg-[#15274d] border border-[#1a3360] text-slate-300 text-xs font-mono text-center transition-colors"
+                className="py-2.5 px-3 rounded-lg bg-[#0e1a32] hover:bg-[#15274d] border border-[#1a3360] text-slate-300 hover:text-white text-xs font-hud font-bold tracking-wider text-center transition-all"
               >
                 VIEW ACTION PLAN →
               </Link>

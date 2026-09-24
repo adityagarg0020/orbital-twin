@@ -126,5 +126,72 @@ export const api = {
       body: JSON.stringify({ message, conversation_history: history })
     });
     return res.json();
+  },
+
+  async getHealth(): Promise<any> {
+    const res = await fetch(`${API_BASE}/health`);
+    if (!res.ok) throw new Error('Failed to fetch health');
+    return res.json();
+  },
+
+  async getDataSource(): Promise<any> {
+    const res = await fetch(`${API_BASE}/telemetry/data-source`);
+    if (!res.ok) throw new Error('Failed to fetch data source');
+    return res.json();
+  },
+
+  async validateManualData(payload: { csv_content?: string; json_content?: string; column_mapping?: Record<string, string> }): Promise<any> {
+    const res = await fetch(`${API_BASE}/telemetry/manual/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Validation request failed' }));
+      throw new Error(err.detail || 'Validation request failed');
+    }
+    return res.json();
+  },
+
+  async analyzeManualTelemetry(payload: { raw_point?: any; rows?: any[]; column_mapping?: Record<string, string> }): Promise<any> {
+    const res = await fetch(`${API_BASE}/telemetry/manual/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Analysis request failed' }));
+      throw new Error(err.detail || 'Analysis request failed');
+    }
+    return res.json();
+  },
+
+  async loadManualIntoTwin(payload: { telemetry: any; anomalies?: any[]; predictions?: any[]; rul?: any; source_name?: string }): Promise<any> {
+    const res = await fetch(`${API_BASE}/telemetry/manual/load-into-twin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Load into twin failed' }));
+      throw new Error(err.detail || 'Load into twin failed');
+    }
+    return res.json();
+  },
+
+  async resetManualDemo(): Promise<any> {
+    const res = await fetch(`${API_BASE}/telemetry/manual/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return res.json();
+  },
+
+  async clearManualData(): Promise<any> {
+    const res = await fetch(`${API_BASE}/telemetry/manual/clear`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return res.json();
   }
 };

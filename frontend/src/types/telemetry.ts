@@ -45,6 +45,7 @@ export interface TelemetryData {
   degradation_stage?: string;
   degradation_progress?: number;
   mission_elapsed_seconds?: number;
+  data_source?: string;
 }
 
 export interface AnomalyItem {
